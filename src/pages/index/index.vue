@@ -4,6 +4,15 @@
     <view class="text-area">
       <text class="title">{{ title }}</text>
     </view>
+    <uni-badge text="1"></uni-badge>
+    <uni-badge text="2" type="success"></uni-badge>
+    <uni-badge text="3" type="primary" :inverted="true"></uni-badge>
+    <uni-card
+      title="dasf"
+      @click=""
+    >
+      
+    </uni-card>
   </view>
 </template>
 
