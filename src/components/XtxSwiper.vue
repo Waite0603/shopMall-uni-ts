@@ -1,6 +1,6 @@
 <template>
   <view class="carousel">
-    <swiper :circular="true" :autoplay="false" :interval="3000" @change="swiperChange">
+    <swiper :circular="true" :autoplay="true" :interval="3000" @change="swiperChange">
       <swiper-item v-for="item in list" :key="item.id">
         <navigator :url="item.hrefUrl" hover-class="none" class="navigator">
           <image mode="aspectFill" class="image" :src="item.imgUrl"></image>
@@ -30,11 +30,9 @@ const swiperChange: UniHelper.SwiperOnChange = (e) => {
   activeIndex.value = e.detail.current
 }
 
-const props = defineProps<{
+defineProps<{
   list: BannerItem[]
 }>()
-console.log(props)
-
 </script>
 
 <style lang="scss">
