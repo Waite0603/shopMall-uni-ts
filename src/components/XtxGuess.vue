@@ -18,7 +18,7 @@
       </view>
     </navigator>
   </view>
-  <view class="loading-text"> 正在加载... </view>
+  <view class="loading-text"> {{ finishFlag ? "没有更多了" : "加载中..." }} </view>
 </template>
 
 <script setup lang="ts">
@@ -27,17 +27,51 @@ import { onMounted } from 'vue'
 import { ref } from 'vue'
 
 import type { GuessItem } from '@/types/home'
+import type { PageParams } from '@/types/global';
 
+// 数据加载结束标记
+const finishFlag = ref(false)
 // 猜你喜欢列表
 const guessList = ref<GuessItem[]>([])
 
-const getHomeGoodsGuessLikeData = async () => {
-  const res = await getHomeGoodsGuessLikeAPI()
-  guessList.value = res.result.items
+// 分页参数, ? 可选参数转为必选参数
+const pageParams: Required<PageParams> = {
+  page: 1,
+  pageSize: 10
+}
+
+// 重置页码
+const resetPage = () => {
+  pageParams.page = 1
+  guessList.value = []
+  finishFlag.value = false
+}
+
+const getHomeGoodsGuessLikeData = async () => { 
+  // 如果数据加载结束, 则不再请求数据
+  if (finishFlag.value) return
+  
+  const res = await getHomeGoodsGuessLikeAPI(pageParams)
+  guessList.value.push(... res.result.items)
+
+  if (pageParams.page < res.result.pages) {
+    // 添加页码
+    pageParams.page++
+  }
+  else {
+    finishFlag.value = true
+  }
+
 }
 
 onMounted(() => {
   getHomeGoodsGuessLikeData()
+})
+
+// 暴露给父组件的方法
+defineExpose({
+  getMore: getHomeGoodsGuessLikeData,
+  resetPage
 })
 </script>
 
