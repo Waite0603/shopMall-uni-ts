@@ -1,11 +1,15 @@
 <template>
+  <!-- 自定义导航栏 -->
   <CustomNavbar></CustomNavbar>
-  <XtxSwiper :list="bannerList"></XtxSwiper>
-  <CategoryPanel :list="categoryList"></CategoryPanel>
-  <HotPanel :list="hotList"></HotPanel>
-  <XtxGuess></XtxGuess>
-  <view class="content">
-  </view>
+
+  <!-- 滚动容器 -->
+  <scroll-view @scrolltolower="onScrolltolower" class="scroll-view" scroll-y>
+    <XtxSwiper :list="bannerList"></XtxSwiper>
+    <CategoryPanel :list="categoryList"></CategoryPanel>
+    <HotPanel :list="hotList"></HotPanel>
+    <XtxGuess></XtxGuess>
+  </scroll-view>
+  
 </template>
 
 <script setup lang="ts">
@@ -38,6 +42,10 @@ const getHomeHotData = async () => {
   const res = await getHomeHotAPI()
   hotList.value = res.result
 }
+
+const onScrolltolower = () => {
+  console.log('触底了')
+}
   
 onLoad(() => {
   getHomeBannerData()
@@ -49,6 +57,15 @@ onLoad(() => {
 <style lang="scss">
 page {
   background-color: #f7f7f7;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll-view {
+  flex: 1;
+  // 设置height: 0; 阻止容器默认高度撑开
+  height: 0;
 }
 </style>
 
