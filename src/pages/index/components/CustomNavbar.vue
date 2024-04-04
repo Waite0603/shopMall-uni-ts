@@ -8,10 +8,10 @@
     <!-- 搜索条 -->
     <view class="search">
       <view>
-        <uni-icons type="search" color="#fff" class="icon-search"/>
+        <uni-icons type="search" color="#fff" class="icon-search" />
         <text>搜索商品</text>
       </view>
-      <uni-icons type="scan" color="#fff" class="icon-scan"/>
+      <uni-icons type="scan" color="#fff" class="icon-scan" />
     </view>
   </view>
 </template>

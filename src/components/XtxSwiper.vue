@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import type { BannerItem } from '@/types/home';
+import type { BannerItem } from '@/types/home'
 import { ref } from 'vue'
 
 const activeIndex = ref(0)

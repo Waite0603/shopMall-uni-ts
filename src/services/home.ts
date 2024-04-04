@@ -1,16 +1,16 @@
-import { http } from "@/utils/http"
-import type { BannerItem, CategoryItem, HotItem, GuessItem } from "@/types/home"
-import type { PageParams, PageResult } from "@/types/global"
+import { http } from '@/utils/http'
+import type { BannerItem, CategoryItem, HotItem, GuessItem } from '@/types/home'
+import type { PageParams, PageResult } from '@/types/global'
 
 /**
  * 首页banner
  * @param distributionSite  广告区域展示位置, 1 为首页（默认值） 2 为商品分类页
- * @returns 
+ * @returns
  */
 export const getHomeBannerAPI = (distributionSite = 1) => {
   return http<BannerItem[]>({
-    method: "GET",
-    url: "/home/banner",
+    method: 'GET',
+    url: '/home/banner',
     data: {
       distributionSite
     }
@@ -23,7 +23,7 @@ export const getHomeBannerAPI = (distributionSite = 1) => {
 export const getHomeCategoryAPI = () => {
   return http<CategoryItem[]>({
     method: 'GET',
-    url: '/home/category/mutli',
+    url: '/home/category/mutli'
   })
 }
 
@@ -33,7 +33,7 @@ export const getHomeCategoryAPI = () => {
 export const getHomeHotAPI = () => {
   return http<HotItem[]>({
     method: 'GET',
-    url: '/home/hot/mutli',
+    url: '/home/hot/mutli'
   })
 }
 

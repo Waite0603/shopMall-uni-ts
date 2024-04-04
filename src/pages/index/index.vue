@@ -10,7 +10,6 @@
     :refresher-triggered="isTriggered"
     @scrolltolower="onScrolltolower"
     @refresherrefresh="onRefresherrefresh"
-
   >
     <PageSkeleton v-if="isLoaded"></PageSkeleton>
     <template v-else>
@@ -88,11 +87,7 @@ const onRefresherrefresh = async () => {
 // 页面加载时获取数据
 onLoad(async () => {
   isLoaded.value = true
-  await Promise.all([
-    getHomeBannerData(),
-    getHomeCategoryData(),
-    getHomeHotData()
-  ])
+  await Promise.all([getHomeBannerData(), getHomeCategoryData(), getHomeHotData()])
   isLoaded.value = false
 })
 </script>

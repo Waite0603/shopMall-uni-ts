@@ -18,7 +18,7 @@
       </view>
     </navigator>
   </view>
-  <view class="loading-text"> {{ finishFlag ? "没有更多了" : "加载中..." }} </view>
+  <view class="loading-text"> {{ finishFlag ? '没有更多了' : '加载中...' }} </view>
 </template>
 
 <script setup lang="ts">
@@ -27,7 +27,7 @@ import { onMounted } from 'vue'
 import { ref } from 'vue'
 
 import type { GuessItem } from '@/types/home'
-import type { PageParams } from '@/types/global';
+import type { PageParams } from '@/types/global'
 
 // 数据加载结束标记
 const finishFlag = ref(false)
@@ -47,21 +47,19 @@ const resetPage = () => {
   finishFlag.value = false
 }
 
-const getHomeGoodsGuessLikeData = async () => { 
+const getHomeGoodsGuessLikeData = async () => {
   // 如果数据加载结束, 则不再请求数据
   if (finishFlag.value) return
-  
+
   const res = await getHomeGoodsGuessLikeAPI(pageParams)
-  guessList.value.push(... res.result.items)
+  guessList.value.push(...res.result.items)
 
   if (pageParams.page < res.result.pages) {
     // 添加页码
     pageParams.page++
-  }
-  else {
+  } else {
     finishFlag.value = true
   }
-
 }
 
 onMounted(() => {
