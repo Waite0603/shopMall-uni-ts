@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { getHomeGoodsGuessLikeAPI } from '@/services/home'
+import { getHomeGoodsGuessLikeAPI } from '@/api/home'
 import { onMounted } from 'vue'
 import { ref } from 'vue'
 
@@ -150,3 +150,4 @@ defineExpose({
   padding: 20rpx 0;
 }
 </style>
+@/api/home

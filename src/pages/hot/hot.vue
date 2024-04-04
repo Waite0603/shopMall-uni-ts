@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { getHotRecommendAPI } from '@/services/hot'
+import { getHotRecommendAPI } from '@/api/hot'
 import { onReady, onLoad } from '@dcloudio/uni-app'
 import { ref, watch, nextTick } from 'vue'
 
@@ -79,7 +79,7 @@ const currUrlMap = hotMap.find((item) => item.type === query.type)
 // 首次获取热门推荐数据
 const getHotRecommendData = async (url: string) => {
   const res = await getHotRecommendAPI(url)
-  console.log(res)
+
   bannerPicture.value = res.result.bannerPicture
   subTypes.value = res.result.subTypes
   renderHotList.value.push(...res.result.subTypes[0].goodsItems.items)
@@ -96,7 +96,6 @@ const scroll = (e: any) => {
 const onScrolltolower = async () => {
   // 获取当前选项数据
   const currData = subTypes.value[activeTab.value]
-  console.log(currData)
 
   // 判断是否加载完成
   if (loadFinish.value) {
@@ -106,8 +105,7 @@ const onScrolltolower = async () => {
   if (currData.goodsItems.page < currData.goodsItems.pages) {
     // 页码累加
     currData.goodsItems.page++
-  }
-  else {
+  } else {
     loadFinish.value = true
     return uni.showToast({
       title: '没有更多了',
@@ -115,7 +113,6 @@ const onScrolltolower = async () => {
       duration: 2000
     })
   }
-
 
   // 请求数据
   const res = await getHotRecommendAPI(currUrlMap!.url, {

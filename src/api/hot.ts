@@ -18,4 +18,3 @@ export const getHotRecommendAPI = (url: string, data?: HotParams) => {
     data
   })
 }
- 

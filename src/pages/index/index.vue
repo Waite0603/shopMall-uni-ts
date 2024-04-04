@@ -25,7 +25,7 @@
 import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 
-import { getHomeBannerAPI, getHomeCategoryAPI, getHomeHotAPI } from '@/services/home'
+import { getHomeBannerAPI, getHomeCategoryAPI, getHomeHotAPI } from '@/api/home'
 
 import PageSkeleton from './components/PageSkeleton.vue'
 import CustomNavbar from './components/CustomNavbar.vue'
