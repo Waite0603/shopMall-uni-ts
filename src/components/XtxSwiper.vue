@@ -1,6 +1,6 @@
 <template>
   <view class="carousel">
-    <swiper :circular="true" :autoplay="true" :interval="3000" @change="swiperChange">
+    <swiper :circular="true" :autoplay="true" :interval="3000" @change="swiperChange" style="height: 100%;">
       <swiper-item v-for="item in list" :key="item.id">
         <navigator :url="item.hrefUrl" hover-class="none" class="navigator">
           <image mode="aspectFill" class="image" :src="item.imgUrl"></image>
@@ -68,7 +68,7 @@ defineProps<{
   .navigator,
   .image {
     width: 100%;
-    height: 280rpx;
+    height: 100%
   }
 }
 </style>
