@@ -1,6 +1,6 @@
 <template>
   <page-skeleton v-if="showSkeleton"></page-skeleton>
-  
+
   <view class="viewport" v-else>
     <!-- 搜索框 -->
     <view class="search">
@@ -9,13 +9,12 @@
           <uni-icons type="search" />
           adfadf
         </view>
-
       </view>
     </view>
     <!-- 分类 -->
     <view class="categories">
       <!-- 左侧：一级分类 -->
-      <scroll-view class="primary" scroll-y >
+      <scroll-view class="primary" scroll-y>
         <view
           v-for="(item, index) in categoryTopList"
           :key="index"
@@ -44,10 +43,7 @@
               hover-class="none"
               :url="`/pages/goods/goods?id=${goods.id}`"
             >
-              <image
-                class="image"
-                :src="goods.picture"
-              ></image>
+              <image class="image" :src="goods.picture"></image>
               <view class="name ellipsis">{{ goods.name }}</view>
               <view class="price">
                 <text class="symbol">¥</text>
@@ -98,10 +94,7 @@ const secondaryData = computed(() => {
 })
 
 onLoad(() => {
-  Promise.all([
-    getHomeBannerData(),
-    getCategoryTopData()
-  ]).then(() => {
+  Promise.all([getHomeBannerData(), getCategoryTopData()]).then(() => {
     showSkeleton.value = false
   })
 })

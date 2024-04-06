@@ -86,7 +86,7 @@ const getHotRecommendData = async (url: string) => {
 }
 
 // 滚动事件
-const scroll = (e: any) => {
+const scroll: UniHelper.ScrollViewOnScroll = (e) => {
   // 滚动距离
   const { scrollTop } = e.detail
   oldScrollTop.value = scrollTop
