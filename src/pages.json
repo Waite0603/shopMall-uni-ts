@@ -21,6 +21,7 @@
 		{
 			"path": "pages/my/my",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "my"
 			}
 		},
@@ -93,5 +94,28 @@
 				"selectedIconPath": "static/tabs/user_selected.png"
 			}
 		]
+	},
+	// 分包配置
+	"subPackages": [
+		{
+			// 子包根目录
+			"root": "pagesUser",
+			// 页面路径与窗口表现
+			"pages": [
+				{
+					"path": "setting/setting",
+					"style": {
+						"navigationBarTitleText": "设置"
+					}
+				}
+			]
+		}
+	],
+	// 分包预下载
+	"preloadRule": {
+		"pages/my/my": {
+			"network": "all",
+			"packages": ["pagesUser"]
+		}
 	}
 }
