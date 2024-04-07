@@ -10,7 +10,7 @@
  *    4. 添加 token 请求头标识
  */
 
-import { useMemberStore } from '@/stores'
+import { useUserStore } from '@/stores'
 
 const baseUrl = 'https://pcapi-xiaotuxian-front.itheima.net'
 
@@ -34,8 +34,8 @@ const httpInterceptor = {
     }
 
     // 添加 token 请求头标识
-    const memberStore = useMemberStore()
-    const token = memberStore.profile?.token
+    const userStore = useUserStore()
+    const token = userStore.profile?.token
     if (token) {
       options.header.Authorization = token
     }
@@ -77,8 +77,8 @@ export const http = <T>(options: UniApp.RequestOptions) => {
         // 状态码 401
         else if (res.statusCode === 401) {
           // 清空 token, 跳转登录页
-          const memberStore = useMemberStore()
-          memberStore.clearProfile()
+          const userStore = useUserStore()
+          userStore.clearProfile()
           uni.reLaunch({
             url: '/pages/login/login'
           })
