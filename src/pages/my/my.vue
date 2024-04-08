@@ -77,8 +77,6 @@
   </scroll-view>
 </template>
 
-// src/pages/my/my.vue
-
 <script setup lang="ts">
 import { useUserStore } from '@/stores'
 import type { XtxGuessInstance } from '@/types/components'
@@ -149,9 +147,6 @@ page {
     margin-bottom: 16rpx;
     font-size: 30rpx;
 
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .extra {

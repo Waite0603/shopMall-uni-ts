@@ -31,6 +31,7 @@ defineProps<{
 /* 热门推荐 */
 .hot {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   min-height: 508rpx;
   margin: 20rpx 20rpx 0;
@@ -55,6 +56,7 @@ defineProps<{
     display: flex;
     flex-direction: column;
     height: 254rpx;
+    weight: 50%;
     border-right: 1rpx solid #eee;
     border-top: 1rpx solid #eee;
     .title {
