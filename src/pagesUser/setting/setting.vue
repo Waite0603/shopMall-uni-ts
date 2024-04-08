@@ -2,7 +2,12 @@
   <view class="viewport">
     <!-- 列表1 -->
     <view class="list" v-if="true">
-      <navigator url="/pagesMember/address/address" hover-class="none" class="item arrow">
+      <navigator
+        url="/pagesMember/address/address"
+        hover-class="none"
+        class="item arrow"
+        v-if="userStore.profile"
+      >
         我的收货地址
       </navigator>
     </view>
@@ -18,15 +23,29 @@
     </view>
     <!-- 操作按钮 -->
     <view class="action">
-      <view class="button">退出登录</view>
+      <view class="button" @click="onLogout" v-if="userStore.profile">退出登录</view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-//
-</script>
+import { useUserStore } from '@/stores'
 
+const userStore = useUserStore()
+
+const onLogout = () => {
+  uni.showModal({
+    title: '提示',
+    content: '确定要退出登录吗？',
+    success: (res) => {
+      if (res.confirm) {
+        userStore.clearProfile()
+        uni.navigateBack()
+      }
+    }
+  })
+}
+</script>
 
 <style lang="scss">
 page {
