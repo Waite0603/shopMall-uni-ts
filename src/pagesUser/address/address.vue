@@ -16,7 +16,7 @@
               <navigator
                 class="edit"
                 hover-class="none"
-                :url="`/pagesMember/address-form/address-form?id=${item.id}`"
+                :url="`/pagesUser/addressForm/addressForm?id=${item.id}`"
               >
                 修改
               </navigator>
@@ -47,7 +47,6 @@ import { ref } from 'vue'
 const addressList = ref<AddressItem[]>([])
 const getMemberAddressData = async () => {
   const res = await getMemberAddressAPI()
-  console.log(res)
   addressList.value = res.result
 }
 
