@@ -155,7 +155,6 @@ const openPopup = (name: typeof popupName.value) => {
 // 获取商品详情
 const getGoodsDetail = async () => {
   const res = await getGoodsByIdAPI(query.id)
-  console.log(res)
   goodsDetail.value = res.result
 }
 

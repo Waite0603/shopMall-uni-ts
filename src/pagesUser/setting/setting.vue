@@ -3,7 +3,7 @@
     <!-- 列表1 -->
     <view class="list" v-if="true">
       <navigator
-        url="/pagesMember/address/address"
+        url="/pagesUser/address/address"
         hover-class="none"
         class="item arrow"
         v-if="userStore.profile"
