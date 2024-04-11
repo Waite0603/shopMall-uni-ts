@@ -30,9 +30,9 @@
 
       <!-- 操作面板 -->
       <view class="action">
-        <view class="item arrow">
+        <view class="item arrow" @tap="openSkuPopup(SkuTypeMode?.both || 1)">
           <text class="label">选择</text>
-          <text class="text ellipsis"> 请选择商品规格 </text>
+          <text class="text ellipsis"> {{ SkuSelectArrText }} </text>
         </view>
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
@@ -105,8 +105,8 @@
       </navigator>
     </view>
     <view class="buttons">
-      <view class="addcart"> 加入购物车 </view>
-      <view class="buynow"> 立即购买 </view>
+      <view class="addcart" @click="openSkuPopup(SkuTypeMode?.both || 2)"> 加入购物车 </view>
+      <view class="buynow" @tap="openSkuPopup(SkuTypeMode?.both || 3)"> 立即购买 </view>
     </view>
   </view>
 
@@ -115,18 +115,34 @@
     <address-panel v-if="popupName === 'address'" @close="showPopup?.close"></address-panel>
     <service-panel v-else-if="popupName === 'service'" @close="showPopup?.close"></service-panel>
   </uni-popup>
+
+  <!-- SKU 组件弹出层 -->
+  <vk-data-goods-sku-popup
+    v-model="isShowSKU"
+    :localdata="localdata"
+    :mode="SkuMode"
+    add-cart-background-color="#ffa868"
+    buy-now-background-color="#27ba9b"
+    @add-cart="onAddCart"
+    ref="SkuRef"
+  ></vk-data-goods-sku-popup>
 </template>
 
 <script setup lang="ts">
 import { onLoad } from '@dcloudio/uni-app'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import type { GoodsResult } from '@/types/goods'
 
-import { getGoodsByIdAPI } from '@/api/goods'
+import { getGoodsByIdAPI, postMemberCartAPI } from '@/api/goods'
 import AddressPanel from './components/AddressPanel.vue'
 import ServicePanel from './components/ServicePanel.vue'
 import PageSkeleton from './components/PageSkeleton.vue'
+import type {
+  SkuPopupEvent,
+  SkuPopupInstanceType,
+  SkuPopupLocaldata
+} from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
 
 // uniapp 接收路由参数
 const query = defineProps<{
@@ -138,11 +154,23 @@ const goodsDetail = ref<GoodsResult>()
 const swiperIndex = ref(1)
 const showSkeleton = ref(true)
 
+// 枚举类型
+enum SkuTypeMode {
+  both = 1,
+  cart = 2,
+  buy = 3
+}
+const SkuMode = ref<SkuTypeMode>(SkuTypeMode.both)
+
+// 商品数据
+const localdata = ref({} as SkuPopupLocaldata)
+
 // 弹出层显示
 const showPopup = ref<{
   open: (type?: UniHelper.UniPopupType) => void
   close: () => void
 }>()
+
 // 弹出层条件渲染
 const popupName = ref<'address' | 'service'>()
 
@@ -156,6 +184,30 @@ const openPopup = (name: typeof popupName.value) => {
 const getGoodsDetail = async () => {
   const res = await getGoodsByIdAPI(query.id)
   goodsDetail.value = res.result
+
+  localdata.value = {
+    _id: res.result.id,
+    name: res.result.name,
+    goods_thumb: res.result.mainPictures[0],
+    spec_list: res.result.specs.map((item) => {
+      return {
+        name: item.name,
+        list: item.values
+      }
+    }),
+    sku_list: res.result.skus.map((item) => {
+      return {
+        _id: item.id,
+        goods_id: res.result.id,
+        goods_name: res.result.name,
+        image: item.picture,
+        // SKU 插件价格单位为分, 需要*100
+        price: item.price * 100,
+        sku_name_arr: item.specs.map((spec) => spec.valueName),
+        stock: item.inventory
+      }
+    })
+  }
 }
 
 // 轮播图切换
@@ -169,6 +221,29 @@ const onTabImage = (url: string) => {
     current: url,
     urls: goodsDetail.value?.mainPictures || []
   })
+}
+
+// 打开 SKU 弹出层
+const isShowSKU = ref(false)
+const openSkuPopup = (mode: SkuTypeMode) => {
+  isShowSKU.value = true
+  SkuMode.value = mode
+}
+
+// Sku 组件实例
+const SkuRef = ref<SkuPopupInstanceType>()
+
+// 计算 Sku 组件选中值
+const SkuSelectArrText = computed(() => {
+  return SkuRef.value?.selectArr?.join(' ').trim() || '请选择规格'
+})
+
+// 加入购物车
+const onAddCart = async (e: SkuPopupEvent) => {
+  const res = await postMemberCartAPI({ skuId: e._id, count: e.buy_num })
+  console.log(res)
+  uni.showToast({ title: '添加成功' })
+  isShowSKU.value = false
 }
 
 onLoad(() => {

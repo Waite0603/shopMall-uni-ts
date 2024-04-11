@@ -2,10 +2,13 @@ import { ComponentCustomProperties } from 'vue'
 import XtxSwiper from '@/components/XtxSwiper.vue'
 import XtxGuess from '@/components/XtxGuess.vue'
 
+import type { SkuPopup } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup.d.ts' 
+
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     XtxSwiper: typeof XtxSwiper
     XtxGuess: typeof XtxGuess
+    vkDataGoodsSkuPopup: SkuPopup
   }
 }
 
