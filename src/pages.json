@@ -52,7 +52,13 @@
 		{
 			"path": "pages/car/car",
 			"style": {
-				"navigationBarTitleText": "car"
+				"navigationBarTitleText": "购物车"
+			}
+		},
+		{
+			"path": "pages/car/car2",
+			"style": {
+				"navigationBarTitleText": "购物车"
 			}
 		}
 	],

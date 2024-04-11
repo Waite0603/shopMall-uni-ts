@@ -100,7 +100,7 @@
     <view class="icons">
       <button class="icons-button"><uni-icons type="star" /> 收藏</button>
       <button class="icons-button" open-type="contact"><uni-icons type="chatboxes" />客服</button>
-      <navigator class="icons-button" url="/pages/cart/cart" open-type="switchTab">
+      <navigator class="icons-button" url="/pages/car/car2" open-type="navigate">
         <uni-icons type="cart" />购物车
       </navigator>
     </view>
@@ -241,7 +241,7 @@ const SkuSelectArrText = computed(() => {
 // 加入购物车
 const onAddCart = async (e: SkuPopupEvent) => {
   const res = await postMemberCartAPI({ skuId: e._id, count: e.buy_num })
-  console.log(res)
+  
   uni.showToast({ title: '添加成功' })
   isShowSKU.value = false
 }
