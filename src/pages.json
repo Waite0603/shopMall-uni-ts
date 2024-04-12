@@ -60,6 +60,12 @@
 			"style": {
 				"navigationBarTitleText": "购物车"
 			}
+		},
+		{
+			"path": "pages/create/create",
+			"style": {
+				"navigationBarTitleText": "创建订单"
+			}
 		}
 	],
 	"globalStyle": {

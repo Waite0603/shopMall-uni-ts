@@ -1,0 +1,486 @@
+<template>
+  <scroll-view scroll-y class="viewport">
+    <!-- 收货地址 -->
+    <view v-if="deliveryAddress" class="shipment" @click="showPopup?.open()">
+      <view class="user"> {{ deliveryAddress.receiver + ' ' + deliveryAddress.contact }} </view>
+      <view class="address"> {{ deliveryAddress.fullLocation + deliveryAddress.address }} </view>
+      <text class="icon icon-right"></text>
+    </view>
+    <view v-else class="shipment" @click="showPopup?.open()">
+      <view class="address"> 请选择收货地址 </view>
+      <text class="icon icon-right"></text>
+    </view>
+
+    <!-- 商品信息 -->
+    <view class="goods">
+      <navigator
+        v-for="item in orderList?.goods"
+        :key="item.skuId"
+        :url="`/pages/goods/goods?id=${item.id}`"
+        class="item"
+        hover-class="none"
+      >
+        <image class="picture" :src="item.picture" />
+        <view class="meta">
+          <view class="name ellipsis">{{ item.name }} </view>
+          <view class="attrs">{{ item.attrsText }}</view>
+          <view class="prices">
+            <view class="pay-price symbol">{{ item.payPrice }}</view>
+            <view class="price symbol">{{ item.price }}</view>
+          </view>
+          <view class="count">x{{ item.count }}</view>
+        </view>
+      </navigator>
+    </view>
+
+    <!-- 配送及支付方式 -->
+    <view class="related">
+      <view class="item">
+        <text class="text">配送时间</text>
+        <picker :range="deliveryList" range-key="text" @change="onChangeDelivery">
+          <view class="icon-fonts picker">{{ activeDelivery.text }}</view>
+        </picker>
+      </view>
+      <view class="item">
+        <text class="text">订单备注</text>
+        <input
+          class="input"
+          :cursor-spacing="30"
+          placeholder="选题，建议留言前先与商家沟通确认"
+          v-model="buyerMessage"
+        />
+      </view>
+    </view>
+
+    <!-- 支付金额 -->
+    <view class="settlement">
+      <view class="item">
+        <text class="text">商品总价: </text>
+        <text class="number symbol">{{ orderList?.summary.totalPrice.toFixed(2) }}</text>
+      </view>
+      <view class="item">
+        <text class="text">运费: </text>
+        <text class="number symbol">{{ orderList?.summary.postFee.toFixed(2) }}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 吸底工具栏 -->
+  <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
+    <view class="total-pay symbol">
+      <text class="number">{{ orderList?.summary.totalPayPrice.toFixed(2) }}</text>
+    </view>
+    <view class="button" :class="{ disabled: true }"> 提交订单 </view>
+  </view>
+
+  <!-- uni-popup 选择地址 -->
+  <uni-popup ref="showPopup" type="bottom" background-color="#fff">
+    <view class="address-panel">
+      <!-- 关闭按钮 -->
+      <uni-icons type="close" class="close" @click="showPopup?.close()" />
+      <!-- 标题 -->
+      <view class="title">配送至</view>
+      <!-- 内容 -->
+      <view class="content">
+        <radio-group @change="radioChange">
+          <view class="item" v-for="(item, index) in orderList?.userAddresses" :key="item.id">
+            <view class="user">{{ item.receiver + ' ' + item.contact }}</view>
+            <view class="address">{{ item.fullLocation.replace(/\s/g, '') + item.address }}</view>
+            <radio
+              :value="item.id"
+              class="icon"
+              :checked="radioCheckId === item.id"
+              color="#27ba9b"
+            />
+          </view>
+        </radio-group>
+      </view>
+      <view class="footer">
+        <navigator
+          class="button primary"
+          url="/pagesUser/addressForm/addressForm"
+          open-type="navigate"
+          hover-class="navigator-hover"
+        >
+          新建地址
+        </navigator>
+
+        <view class="button warning" @click="onSubmitChangeAddress"> 确定 </view>
+      </view>
+    </view>
+  </uni-popup>
+</template>
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { getMemberOrderPreAPI } from '@/api/order'
+import { onShow } from '@dcloudio/uni-app'
+
+import type { OrderPreResult } from '@/types/order'
+import type { AddressItem } from '@/types/address'
+
+// 获取屏幕边界到安全区域距离
+const { safeAreaInsets } = uni.getSystemInfoSync()
+
+// 获取订单预览信息
+const orderList = ref<OrderPreResult>()
+const getMemberOrderPre = async () => {
+  const res = await getMemberOrderPreAPI()
+  orderList.value = res.result
+  const defaultAddress = res.result.userAddresses.find((item) => item.isDefault)
+  if (defaultAddress) {
+    deliveryAddress.value = defaultAddress
+    radioCheckId.value = defaultAddress.id
+  }
+}
+
+// 订单备注
+const buyerMessage = ref('')
+
+// 配送时间
+const deliveryList = ref([
+  { type: 1, text: '时间不限 (周一至周日)' },
+  { type: 2, text: '工作日送 (周一至周五)' },
+  { type: 3, text: '周末配送 (周六至周日)' }
+])
+// 当前配送时间下标
+const activeIndex = ref(0)
+// 当前配送时间
+const activeDelivery = computed(() => deliveryList.value[activeIndex.value])
+// 修改配送时间
+const onChangeDelivery: UniHelper.SelectorPickerOnChange = (ev) => {
+  activeIndex.value = ev.detail.value
+}
+
+// 选择地址
+// 获取 popup 实例
+const showPopup = ref<{
+  open: (type?: UniHelper.UniPopupType) => void
+  close: (type?: UniHelper.UniPopupType) => void
+}>()
+const radioCheckId = ref('')
+const deliveryAddress = ref<AddressItem>()
+const onSubmitChangeAddress = () => {
+  deliveryAddress.value = orderList.value?.userAddresses.find(
+    (item) => item.id === radioCheckId.value
+  )
+  showPopup.value?.close()
+}
+const radioChange: UniHelper.RadioGroupOnChange = (e) => {
+  radioCheckId.value = e.detail.value
+}
+
+onShow(() => {
+  getMemberOrderPre()
+})
+</script>
+
+<style lang="scss">
+page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: #f4f4f4;
+}
+
+.symbol::before {
+  content: '¥';
+  font-size: 80%;
+  margin-right: 5rpx;
+}
+
+.shipment {
+  margin: 20rpx;
+  padding: 30rpx 30rpx 30rpx 84rpx;
+  font-size: 26rpx;
+  border-radius: 10rpx;
+  background: url(https://pcapi-xiaotuxian-front-devtest.itheima.net/miniapp/images/locate.png)
+    20rpx center / 50rpx no-repeat #fff;
+  position: relative;
+
+  .icon {
+    font-size: 36rpx;
+    color: #333;
+    transform: translateY(-50%);
+    position: absolute;
+    top: 50%;
+    right: 20rpx;
+  }
+
+  .user {
+    color: #333;
+    margin-bottom: 5rpx;
+  }
+
+  .address {
+    color: #666;
+  }
+}
+
+.goods {
+  margin: 20rpx;
+  padding: 0 20rpx;
+  border-radius: 10rpx;
+  background-color: #fff;
+
+  .item {
+    display: flex;
+    padding: 30rpx 0;
+    border-top: 1rpx solid #eee;
+
+    &:first-child {
+      border-top: none;
+    }
+
+    .picture {
+      width: 170rpx;
+      height: 170rpx;
+      border-radius: 10rpx;
+      margin-right: 20rpx;
+    }
+
+    .meta {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .name {
+      height: 80rpx;
+      font-size: 26rpx;
+      color: #444;
+    }
+
+    .attrs {
+      line-height: 1.8;
+      padding: 0 15rpx;
+      margin-top: 6rpx;
+      font-size: 24rpx;
+      align-self: flex-start;
+      border-radius: 4rpx;
+      color: #888;
+      background-color: #f7f7f8;
+    }
+
+    .prices {
+      display: flex;
+      align-items: baseline;
+      margin-top: 6rpx;
+      font-size: 28rpx;
+
+      .pay-price {
+        margin-right: 10rpx;
+        color: #cf4444;
+      }
+
+      .price {
+        font-size: 24rpx;
+        color: #999;
+        text-decoration: line-through;
+      }
+    }
+
+    .count {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      font-size: 26rpx;
+      color: #444;
+    }
+  }
+}
+
+.related {
+  margin: 20rpx;
+  padding: 0 20rpx;
+  border-radius: 10rpx;
+  background-color: #fff;
+
+  .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 80rpx;
+    font-size: 26rpx;
+    color: #333;
+  }
+
+  .input {
+    flex: 1;
+    text-align: right;
+    margin: 20rpx 0;
+    padding-right: 20rpx;
+    font-size: 26rpx;
+    color: #999;
+  }
+
+  .item .text {
+    width: 125rpx;
+  }
+
+  .picker {
+    color: #666;
+  }
+
+  .picker::after {
+    content: '>';
+  }
+}
+
+/* 结算清单 */
+.settlement {
+  margin: 20rpx;
+  padding: 0 20rpx;
+  border-radius: 10rpx;
+  background-color: #fff;
+
+  .item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80rpx;
+    font-size: 26rpx;
+    color: #333;
+  }
+
+  .danger {
+    color: #cf4444;
+  }
+}
+
+/* 吸底工具栏 */
+.toolbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--window-bottom));
+  z-index: 1;
+
+  background-color: #fff;
+  height: 100rpx;
+  padding: 0 20rpx;
+  border-top: 1rpx solid #eaeaea;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: content-box;
+
+  .total-pay {
+    font-size: 40rpx;
+    color: #cf4444;
+
+    .decimal {
+      font-size: 75%;
+    }
+  }
+
+  .button {
+    width: 220rpx;
+    text-align: center;
+    line-height: 72rpx;
+    font-size: 26rpx;
+    color: #fff;
+    border-radius: 72rpx;
+    background-color: #27ba9b;
+  }
+
+  .disabled {
+    opacity: 0.6;
+  }
+}
+
+.address-panel {
+  padding: 0 30rpx;
+  border-radius: 10rpx 10rpx 0 0;
+  position: relative;
+  background-color: #fff;
+}
+
+.title {
+  line-height: 1;
+  padding: 40rpx 0;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: normal;
+  border-bottom: 1rpx solid #ddd;
+  color: #444;
+}
+
+.close {
+  position: absolute;
+  right: 24rpx;
+  top: 24rpx;
+}
+
+.content {
+  min-height: 300rpx;
+  max-height: 540rpx;
+  overflow: auto;
+  padding: 20rpx;
+  .item {
+    padding: 30rpx 50rpx 30rpx 60rpx;
+    background-size: 40rpx;
+    background-repeat: no-repeat;
+    background-position: 0 center;
+    background-image: url(https://pcapi-xiaotuxian-front-devtest.itheima.net/miniapp/images/locate.png);
+    position: relative;
+  }
+  .icon {
+    color: #27ba9b;
+    position: absolute;
+    top: 40%;
+    right: 0;
+    transform: scale(0.7);
+  }
+  .icon-checked {
+    color: #27ba9b;
+  }
+  .icon-ring {
+    color: #444;
+  }
+  .user {
+    font-size: 28rpx;
+    color: #444;
+    font-weight: 500;
+  }
+  .address {
+    font-size: 26rpx;
+    color: #666;
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 20rpx 0 40rpx;
+  font-size: 28rpx;
+  color: #444;
+
+  .button {
+    flex: 1;
+    height: 72rpx;
+    text-align: center;
+    line-height: 72rpx;
+    margin: 0 20rpx;
+    color: #fff;
+    border-radius: 72rpx;
+  }
+
+  .warning {
+    color: #fff;
+    background-color: #f28b54;
+  }
+
+  .primary {
+    color: #fff;
+    background-color: #27ba9b;
+  }
+
+  .secondary {
+    background-color: #ffa868;
+  }
+}
+</style>
