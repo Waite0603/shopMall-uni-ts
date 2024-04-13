@@ -36,7 +36,9 @@
         </view>
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
-          <text class="text ellipsis"> 请选择收获地址 </text>
+          <text class="text ellipsis">
+            {{ checkedAddress ? checkedAddress?.fullLocation.replace(/\s/g, '') + checkedAddress?.address : '请选择地址' }}
+          </text>
         </view>
         <view class="item arrow" @tap="openPopup('service')">
           <text class="label">服务</text>
@@ -112,7 +114,11 @@
 
   <!-- popup 弹出层 -->
   <uni-popup ref="showPopup" type="bottom" background-color="#fff">
-    <address-panel v-if="popupName === 'address'" @close="showPopup?.close"></address-panel>
+    <address-panel
+      v-if="popupName === 'address'"
+      @close="showPopup?.close"
+      @update="handleAddressUpdate"
+    ></address-panel>
     <service-panel v-else-if="popupName === 'service'" @close="showPopup?.close"></service-panel>
   </uni-popup>
 
@@ -124,6 +130,7 @@
     add-cart-background-color="#ffa868"
     buy-now-background-color="#27ba9b"
     @add-cart="onAddCart"
+    @buy-now="onBuyNow"
     ref="SkuRef"
   ></vk-data-goods-sku-popup>
 </template>
@@ -143,6 +150,7 @@ import type {
   SkuPopupInstanceType,
   SkuPopupLocaldata
 } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
+import type { AddressItem } from '@/types/address'
 
 // uniapp 接收路由参数
 const query = defineProps<{
@@ -241,9 +249,28 @@ const SkuSelectArrText = computed(() => {
 // 加入购物车
 const onAddCart = async (e: SkuPopupEvent) => {
   const res = await postMemberCartAPI({ skuId: e._id, count: e.buy_num })
-  
+
   uni.showToast({ title: '添加成功' })
   isShowSKU.value = false
+}
+
+// 获取 AddressPanel 实例
+const checkedAddress = ref<AddressItem>()
+const handleAddressUpdate = (address: AddressItem) => {
+  checkedAddress.value = address
+
+  console.log(checkedAddress.value)
+  showPopup.value?.close()
+}
+
+// 立即购买事件
+const onBuyNow = (e: SkuPopupEvent) => {
+  // 获取 AddressPanel 实例下的 ref 值
+  console.log(checkedAddress.value)
+  console.log('立即购买', e)
+  uni.navigateTo({
+    url: `/pages/create/create?skuId=${e._id}&count=${e.buy_num}`
+  })
 }
 
 onLoad(() => {

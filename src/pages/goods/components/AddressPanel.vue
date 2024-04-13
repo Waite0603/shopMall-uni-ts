@@ -6,21 +6,18 @@
     <view class="title">配送至</view>
     <!-- 内容 -->
     <view class="content">
-      <view class="item">
-        <view class="user">李明 13824686868</view>
-        <view class="address">北京市顺义区后沙峪地区安平北街6号院</view>
-        <uni-icons type="circle" class="icon" />
-      </view>
-      <view class="item">
-        <view class="user">王东 13824686868</view>
-        <view class="address">北京市顺义区后沙峪地区安平北街6号院</view>
-        <uni-icons type="circle-filled" class="icon" color="#27ba9b" />
-      </view>
-      <view class="item">
-        <view class="user">张三 13824686868</view>
-        <view class="address">北京市朝阳区孙河安平北街6号院</view>
-        <uni-icons type="circle" class="icon" />
-      </view>
+      <radio-group @change="radioChange">
+        <view class="item" v-for="(item, index) in addressList" :key="item.id">
+          <view class="user">{{ item.receiver + ' ' + item.contact }}</view>
+          <view class="address">{{ item.fullLocation.replace(/\s/g, '') + item.address }}</view>
+          <radio
+            :value="item.id"
+            class="icon"
+            :checked="checkedAddress?.id === item.id"
+            color="#27ba9b"
+          />
+        </view>
+      </radio-group>
     </view>
     <view class="footer">
       <view class="button primary"> 新建地址 </view>
@@ -30,10 +27,37 @@
 </template>
 
 <script setup lang="ts">
+import { getMemberAddressAPI } from '@/api/address'
+import type { AddressItem } from '@/types/address'
+import { watchEffect } from 'vue'
+import { onMounted } from 'vue'
+import { ref } from 'vue'
+
 // 子调父
 const emit = defineEmits<{
   (event: 'close'): () => void
+  (event: 'update'): () => void
 }>()
+
+const addressList = ref<AddressItem[]>()
+const checkedAddress = ref<AddressItem>()
+
+const getAddressList = async () => {
+  const res = await getMemberAddressAPI()
+  addressList.value = res.result
+}
+
+const radioChange: UniHelper.RadioGroupOnChange = (e) => {
+  checkedAddress.value = addressList.value?.find((item) => item.id === e.detail.value)
+  console.log(checkedAddress.value)
+
+  emit('update', checkedAddress.value)
+}
+
+
+onMounted(() => {
+  getAddressList()
+})
 </script>
 
 <style lang="scss">
@@ -74,12 +98,11 @@ const emit = defineEmits<{
     position: relative;
   }
   .icon {
-    color: #999;
-    font-size: 40rpx;
-    transform: translateY(-50%);
+    color: #27ba9b;
     position: absolute;
-    top: 50%;
+    top: 40%;
     right: 0;
+    transform: scale(0.7);
   }
   .icon-checked {
     color: #27ba9b;

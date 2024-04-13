@@ -113,11 +113,19 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { getMemberOrderPreAPI } from '@/api/order'
+import { getMemberOrderPreAPI, getMemberOrderPreNowAPI } from '@/api/order'
+import { getMemberAddressAPI } from '@/api/address'
 import { onShow } from '@dcloudio/uni-app'
 
 import type { OrderPreResult } from '@/types/order'
 import type { AddressItem } from '@/types/address'
+
+// 获取页面参数
+const query = defineProps<{
+  skuId?: string
+  count?: number
+  addressId?: string
+}>()
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -125,8 +133,20 @@ const { safeAreaInsets } = uni.getSystemInfoSync()
 // 获取订单预览信息
 const orderList = ref<OrderPreResult>()
 const getMemberOrderPre = async () => {
-  const res = await getMemberOrderPreAPI()
-  orderList.value = res.result
+  let res
+  if (query.skuId && query.count) {
+    res = await getMemberOrderPreNowAPI({
+      skuId: query.skuId,
+      count: query.count
+    })
+
+    const addressRes = await getMemberAddressAPI()
+    res.result.userAddresses = addressRes.result
+    orderList.value = res.result
+  } else {
+    res = await getMemberOrderPreAPI()
+    orderList.value = res.result
+  }
   const defaultAddress = res.result.userAddresses.find((item) => item.isDefault)
   if (defaultAddress) {
     deliveryAddress.value = defaultAddress
