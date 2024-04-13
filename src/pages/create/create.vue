@@ -3,7 +3,7 @@
     <!-- 收货地址 -->
     <view v-if="deliveryAddress" class="shipment" @click="showPopup?.open()">
       <view class="user"> {{ deliveryAddress.receiver + ' ' + deliveryAddress.contact }} </view>
-      <view class="address"> {{ deliveryAddress.fullLocation + deliveryAddress.address }} </view>
+      <view class="address"> {{ deliveryAddress.fullLocation.replace(/\s/g, '') + deliveryAddress.address }} </view>
       <text class="icon icon-right"></text>
     </view>
     <view v-else class="shipment" @click="showPopup?.open()">
@@ -147,10 +147,22 @@ const getMemberOrderPre = async () => {
     res = await getMemberOrderPreAPI()
     orderList.value = res.result
   }
-  const defaultAddress = res.result.userAddresses.find((item) => item.isDefault)
-  if (defaultAddress) {
-    deliveryAddress.value = defaultAddress
-    radioCheckId.value = defaultAddress.id
+
+  // 如果接收到地址ID
+  if (query.addressId) {
+    const address = res.result.userAddresses.find((item) => item.id === query.addressId)
+    if (address) {
+      deliveryAddress.value = address
+      radioCheckId.value = address.id
+    }
+  }
+  // 设置默认地址
+  else {
+    const defaultAddress = res.result.userAddresses.find((item) => item.isDefault)
+    if (defaultAddress) {
+      deliveryAddress.value = defaultAddress
+      radioCheckId.value = defaultAddress.id
+    }
   }
 }
 
@@ -190,8 +202,22 @@ const radioChange: UniHelper.RadioGroupOnChange = (e) => {
   radioCheckId.value = e.detail.value
 }
 
-onShow(() => {
-  getMemberOrderPre()
+onShow(async () => {
+  await getMemberOrderPre()
+
+  const pages = getCurrentPages()
+  const currPage = pages[pages.length - 1]
+
+  const addressId = (currPage as any).data.addressId
+  if (addressId) {
+    radioCheckId.value = addressId
+    console.log(radioCheckId.value)
+    console.log(orderList.value?.userAddresses)
+    deliveryAddress.value = orderList.value?.userAddresses.find(
+      (item) => item.id === radioCheckId.value
+    )
+    console.log(deliveryAddress.value)
+  }
 })
 </script>
 

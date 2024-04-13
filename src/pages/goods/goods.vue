@@ -37,7 +37,11 @@
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
           <text class="text ellipsis">
-            {{ checkedAddress ? checkedAddress?.fullLocation.replace(/\s/g, '') + checkedAddress?.address : '请选择地址' }}
+            {{
+              checkedAddress
+                ? checkedAddress?.fullLocation.replace(/\s/g, '') + checkedAddress?.address
+                : '请选择地址'
+            }}
           </text>
         </view>
         <view class="item arrow" @tap="openPopup('service')">
@@ -256,10 +260,8 @@ const onAddCart = async (e: SkuPopupEvent) => {
 
 // 获取 AddressPanel 实例
 const checkedAddress = ref<AddressItem>()
-const handleAddressUpdate = (address: AddressItem) => {
-  checkedAddress.value = address
-
-  console.log(checkedAddress.value)
+const handleAddressUpdate = ($event: AddressItem) => {
+  checkedAddress.value = $event
   showPopup.value?.close()
 }
 
@@ -268,9 +270,15 @@ const onBuyNow = (e: SkuPopupEvent) => {
   // 获取 AddressPanel 实例下的 ref 值
   console.log(checkedAddress.value)
   console.log('立即购买', e)
-  uni.navigateTo({
-    url: `/pages/create/create?skuId=${e._id}&count=${e.buy_num}`
-  })
+  if (checkedAddress.value) {
+    uni.navigateTo({
+      url: `/pages/create/create?skuId=${e._id}&count=${e.buy_num}&addressId=${checkedAddress.value.id}`
+    })
+  } else {
+    uni.navigateTo({
+      url: `/pages/create/create?skuId=${e._id}&count=${e.buy_num}`
+    })
+  }
 }
 
 onLoad(() => {

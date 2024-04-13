@@ -129,7 +129,17 @@ const onsubmit = async () => {
     await putMemberAddressByIdAPI(query.id, form.value)
   } else {
     // 新建地址请求
-    await postMemberAddressAPI(form.value)
+    const res = await postMemberAddressAPI(form.value)
+
+    // 获取当前页面
+    const pages = getCurrentPages()
+    // 上一个页面
+    const prevPage = pages[pages.length - 2]
+    // 如果上一个页面是订单创造页面
+    if (prevPage.route === 'pages/create/create') {
+      // 直接赋值
+      (prevPage as any).setData({ addressId: res.result.id })
+    }
   }
   // 成功提示
   uni.showToast({ icon: 'success', title: query.id ? '修改成功' : '添加成功' })

@@ -6,7 +6,7 @@ import { http } from '@/utils/http'
  * @param data 请求参数
  */
 export const postMemberAddressAPI = (data: AddressParams) => {
-  return http({
+  return http<{id: string}>({
     method: 'POST',
     url: '/member/address',
     data

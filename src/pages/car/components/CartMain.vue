@@ -67,7 +67,11 @@
         <text class="text">合计:</text>
         <text class="amount">{{ selectedAmount }}</text>
         <view class="button-grounp">
-          <view class="button payment-button" :class="{ disabled: true }">
+          <view
+            class="button payment-button"
+            :class="{ disabled: selectedCount <= 0 }"
+            @click="onPayment"
+          >
             去结算({{ selectedCount }})
           </view>
         </view>
@@ -189,6 +193,11 @@ const selectedCount = computed(() => {
 const selectedAmount = computed(() => {
   return selectedList.value.reduce((prev, item) => prev + item.nowPrice * item.count, 0).toFixed(2)
 })
+
+// 去结算
+const onPayment = () => {
+  uni.navigateTo({ url: '/pages/create/create' })
+}
 
 // 初始化调用: 页面显示触发
 onShow(() => {

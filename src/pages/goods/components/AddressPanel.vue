@@ -1,4 +1,5 @@
 <template>
+
   <view class="address-panel">
     <!-- 关闭按钮 -->
     <uni-icons type="close" class="close" @tap="emit('close')" />
@@ -29,14 +30,13 @@
 <script setup lang="ts">
 import { getMemberAddressAPI } from '@/api/address'
 import type { AddressItem } from '@/types/address'
-import { watchEffect } from 'vue'
 import { onMounted } from 'vue'
 import { ref } from 'vue'
 
 // 子调父
 const emit = defineEmits<{
   (event: 'close'): () => void
-  (event: 'update'): () => void
+  (event: 'update', address: AddressItem): void
 }>()
 
 const addressList = ref<AddressItem[]>()
@@ -49,14 +49,18 @@ const getAddressList = async () => {
 
 const radioChange: UniHelper.RadioGroupOnChange = (e) => {
   checkedAddress.value = addressList.value?.find((item) => item.id === e.detail.value)
-  console.log(checkedAddress.value)
 
-  emit('update', checkedAddress.value)
+  if (checkedAddress.value) {
+    emit('update', checkedAddress.value)
+  }
 }
 
-
 onMounted(() => {
+  uni.showLoading({ title: '加载中' })
   getAddressList()
+  setTimeout(() => {
+    uni.hideLoading()
+  }, 500)
 })
 </script>
 
