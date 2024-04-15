@@ -141,6 +141,24 @@
 					}
 				}
 			]
+		},
+		{
+			"root": "pagesOrder",
+			"pages": [
+				{
+					"path": "detail/detail",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "订单详情"
+					}
+				},
+				{
+					"path": "payment/payment",
+					"style": {
+						"navigationBarTitleText": "支付结果"
+					}
+				}
+			]
 		}
 	],
 	// 分包预下载
@@ -149,6 +167,12 @@
 			"network": "all",
 			"packages": [
 				"pagesUser"
+			]
+		},
+		"pages/create/create": {
+			"network": "all",
+			"packages": [
+				"pagesOrder"
 			]
 		}
 	}

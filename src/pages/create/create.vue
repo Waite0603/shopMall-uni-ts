@@ -3,7 +3,9 @@
     <!-- 收货地址 -->
     <view v-if="deliveryAddress" class="shipment" @click="showPopup?.open()">
       <view class="user"> {{ deliveryAddress.receiver + ' ' + deliveryAddress.contact }} </view>
-      <view class="address"> {{ deliveryAddress.fullLocation.replace(/\s/g, '') + deliveryAddress.address }} </view>
+      <view class="address">
+        {{ deliveryAddress.fullLocation.replace(/\s/g, '') + deliveryAddress.address }}
+      </view>
       <text class="icon icon-right"></text>
     </view>
     <view v-else class="shipment" @click="showPopup?.open()">
@@ -70,7 +72,9 @@
     <view class="total-pay symbol">
       <text class="number">{{ orderList?.summary.totalPayPrice.toFixed(2) }}</text>
     </view>
-    <view class="button" :class="{ disabled: true }"> 提交订单 </view>
+    <view class="button" :class="{ disabled: !deliveryAddress }" @click="onOrderSubmit">
+      提交订单
+    </view>
   </view>
 
   <!-- uni-popup 选择地址 -->
@@ -113,7 +117,12 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { getMemberOrderPreAPI, getMemberOrderPreNowAPI } from '@/api/order'
+import {
+  getMemberOrderPreAPI,
+  getMemberOrderPreNowAPI,
+  getMemberOrderRepurchaseByIdAPI,
+  postMemberOrderAPI
+} from '@/api/order'
 import { getMemberAddressAPI } from '@/api/address'
 import { onShow } from '@dcloudio/uni-app'
 
@@ -125,6 +134,7 @@ const query = defineProps<{
   skuId?: string
   count?: number
   addressId?: string
+  orderId?: string
 }>()
 
 // 获取屏幕边界到安全区域距离
@@ -134,6 +144,7 @@ const { safeAreaInsets } = uni.getSystemInfoSync()
 const orderList = ref<OrderPreResult>()
 const getMemberOrderPre = async () => {
   let res
+  // 立即购买
   if (query.skuId && query.count) {
     res = await getMemberOrderPreNowAPI({
       skuId: query.skuId,
@@ -143,7 +154,14 @@ const getMemberOrderPre = async () => {
     const addressRes = await getMemberAddressAPI()
     res.result.userAddresses = addressRes.result
     orderList.value = res.result
-  } else {
+  }
+  // 再次购买
+  else if (query.orderId) {
+    res = await getMemberOrderRepurchaseByIdAPI(query.orderId)
+    orderList.value = res.result
+  }
+  // 预付订单
+  else {
     res = await getMemberOrderPreAPI()
     orderList.value = res.result
   }
@@ -202,6 +220,25 @@ const radioChange: UniHelper.RadioGroupOnChange = (e) => {
   radioCheckId.value = e.detail.value
 }
 
+// 提交订单
+const onOrderSubmit = async () => {
+  if (!deliveryAddress.value) {
+    uni.showToast({ title: '请选择收货地址', icon: 'none' })
+    return
+  }
+  const res = await postMemberOrderAPI({
+    addressId: deliveryAddress.value?.id,
+    buyerMessage: buyerMessage.value,
+    deliveryTimeType: activeDelivery.value.type,
+    goods: orderList.value!.goods.map((v) => ({ count: v.count, skuId: v.skuId })),
+    payChannel: 2,
+    payType: 1
+  })
+
+  // 关闭当前页面，跳转到订单详情，传递订单id
+  uni.redirectTo({ url: `/pagesOrder/detail/detail?id=${res.result.id}` })
+}
+
 onShow(async () => {
   await getMemberOrderPre()
 
@@ -211,8 +248,6 @@ onShow(async () => {
   const addressId = (currPage as any).data.addressId
   if (addressId) {
     radioCheckId.value = addressId
-    console.log(radioCheckId.value)
-    console.log(orderList.value?.userAddresses)
     deliveryAddress.value = orderList.value?.userAddresses.find(
       (item) => item.id === radioCheckId.value
     )
