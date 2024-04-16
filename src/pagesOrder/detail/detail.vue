@@ -47,19 +47,25 @@
               再次购买
             </navigator>
             <!-- 待发货状态：模拟发货,开发期间使用,用于修改订单状态为已发货 -->
-            <view class="button" @click="onOrderSend"> 模拟发货 </view>
+            <view
+              class="button"
+              @click="onOrderSend"
+              v-if="order?.orderState === OrderState.DaiFaHuo"
+            >
+              模拟发货
+            </view>
           </view>
         </template>
       </view>
       <!-- 配送状态 -->
       <view class="shipment">
         <!-- 订单物流信息 -->
-        <!-- <view v-for="item in 1" :key="item" class="item">
+        <view v-for="item in logisticsList" :key="item.id" class="item">
           <view class="message">
-            您已在广州市天河区黑马程序员完成取件，感谢使用菜鸟驿站，期待再次为您服务。
+            {{ item.text }}
           </view>
-          <view class="date"> 2023-04-14 13:14:20 </view>
-        </view> -->
+          <view class="date"> {{ item.time }} </view>
+        </view>
         <!-- 用户收货地址 -->
         <view class="locate">
           <view class="user"> {{ order?.receiverContact + ' ' + order?.receiverMobile }}</view>
@@ -74,7 +80,7 @@
             class="navigator"
             v-for="(item, index) in order?.skus"
             :key="index"
-            :url="`/pages/goods/goods?id=${item.id}`"
+            :url="`/pages/goods/goods?id=${item.spuId}`"
             hover-class="none"
           >
             <image class="cover" :src="item.image"></image>
@@ -192,12 +198,17 @@
 
 <script setup lang="ts">
 import { OrderState, orderStateList } from '@/enums/order'
-import { getMemberOrderByIdAPI, getMemberOrderConsignmentByIdAPI, getMemberOrderLogisticsByIdAPI } from '@/api/order'
+import {
+  getMemberOrderByIdAPI,
+  getMemberOrderConsignmentByIdAPI,
+  getMemberOrderLogisticsByIdAPI
+} from '@/api/order'
 import { getPayMockAPI } from '@/api/pay'
 import type { OrderResult } from '@/types/order'
 import { onLoad, onReady } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import type { XtxGuessInstance } from '@/types/components'
+import type { LogisticItem } from '@/types/order'
 
 // 获取页面栈
 const pages = getCurrentPages()
@@ -243,16 +254,23 @@ const query = defineProps<{
 // 获取订单详情
 const order = ref<OrderResult>()
 const getMemberOrderByIdData = async () => {
-  console.log(query.id)
   const res = await getMemberOrderByIdAPI(query.id)
-  console.log(res)
   order.value = res.result
+  if (
+    [OrderState.DaiShouHuo, OrderState.DaiPingJia, OrderState.YiWanCheng].includes(
+      order.value.orderState
+    )
+  ) {
+    getMemberOrderLogisticsByIdData()
+  }
 }
 
 // 获取物流信息
-const getMemberOrderConsignmentByIdData = async () => {
+const logisticsList = ref<LogisticItem[]>([])
+const getMemberOrderLogisticsByIdData = async () => {
   const res = await getMemberOrderLogisticsByIdAPI(query.id)
   console.log(res)
+  logisticsList.value = res.result.list
 }
 
 // 倒计时结束
@@ -280,7 +298,6 @@ const onOrderSend = async () => {
 
 onLoad(() => {
   getMemberOrderByIdData()
-  getMemberOrderConsignmentByIdData()
 })
 
 // 页面渲染完毕，绑定动画效果
