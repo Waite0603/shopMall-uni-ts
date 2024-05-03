@@ -98,6 +98,7 @@ const onScrolltolower = () => {
 
 // 验证登录状态
 onShow(() => {
+  // 获取会员信息
   getMemberProfileAPI()
 })
 </script>
