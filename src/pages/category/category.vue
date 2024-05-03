@@ -20,13 +20,13 @@
           :key="index"
           class="item"
           :class="{ active: activeIndex === index }"
-          @click="activeIndex = index"
+          @click="changeTab(index)"
         >
           <text class="name"> {{ item.name }} </text>
         </view>
       </scroll-view>
       <!-- 右侧：二级分类 -->
-      <scroll-view class="secondary" scroll-y>
+      <scroll-view class="secondary" scroll-y :scroll-top="scrollTop" @scroll="scroll">
         <!-- 焦点图 -->
         <XtxSwiper class="banner" :list="bannerList" />
         <!-- 内容区域 -->
@@ -67,7 +67,7 @@ import { getHomeBannerAPI } from '@/api/home'
 import { getCategoryTopAPI } from '@/api/category'
 import type { BannerItem } from '@/types/home'
 import type { CategoryTopItem } from '@/types/category'
-
+import { nextTick } from 'vue'
 const bannerList = ref<BannerItem[]>([])
 const categoryTopList = ref<CategoryTopItem[]>([])
 const showSkeleton = ref(true)
@@ -86,15 +86,43 @@ const getCategoryTopData = async () => {
 }
 
 // 提取二级分类数据
-const secondaryData = computed(() => {
+const secondaryData = ref<any>([])
+const getSecondaryData = () => {
+  console.log('categoryTopList', categoryTopList.value)
   if (categoryTopList.value.length) {
-    return categoryTopList.value[activeIndex.value].children
+    secondaryData.value = categoryTopList.value[activeIndex.value].children
+  } else {
+    secondaryData.value = []
   }
-  return []
-})
+  console.log('secondaryData', secondaryData.value)
+}
+
+// scroll-view 回到顶部
+const scrollTop = ref(0)
+const oldScrollTop = ref(0)
+
+// 滚动事件
+const scroll: UniHelper.ScrollViewOnScroll = (e) => {
+  // 滚动距离
+  const { scrollTop } = e.detail
+  oldScrollTop.value = scrollTop
+}
+
+// 切换 tab
+const changeTab = (index: number) => {
+  activeIndex.value = index
+  getSecondaryData()
+
+  // 渲染完成后, 滚动到顶部
+  scrollTop.value = oldScrollTop.value
+  nextTick(() => {
+    scrollTop.value = 0
+  })
+}
 
 onLoad(() => {
   Promise.all([getHomeBannerData(), getCategoryTopData()]).then(() => {
+    getSecondaryData()
     showSkeleton.value = false
   })
 })
