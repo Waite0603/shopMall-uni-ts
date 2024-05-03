@@ -79,8 +79,10 @@
 
 <script setup lang="ts">
 import { useUserStore } from '@/stores'
+import { getMemberProfileAPI } from '@/api/user'
 import type { XtxGuessInstance } from '@/types/components'
 import { ref } from 'vue'
+import { onShow } from '@dcloudio/uni-app';
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -93,6 +95,11 @@ const guessRef = ref<XtxGuessInstance>()
 const onScrolltolower = () => {
   guessRef.value?.getMore()
 }
+
+// 验证登录状态
+onShow(() => {
+  getMemberProfileAPI()
+})
 </script>
 
 <style lang="scss">
@@ -146,7 +153,6 @@ page {
     max-width: 350rpx;
     margin-bottom: 16rpx;
     font-size: 30rpx;
-
   }
 
   .extra {
